@@ -18,7 +18,7 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Vérifier que l'utilisateur existe toujours
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId).select("-password"); // -password pour ne pas renvoyer le mot de passe
     if (!user) {
       return res.status(401).json({
         success: false,

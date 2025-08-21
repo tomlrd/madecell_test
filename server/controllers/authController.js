@@ -8,7 +8,7 @@ class AuthController {
   // Méthodes privées
   static #generateAccessToken(userId) {
     return jwt.sign({ userId }, process.env.JWT_SECRET, {
-      expiresIn: "1m",
+      expiresIn: "15m",
     });
   }
 

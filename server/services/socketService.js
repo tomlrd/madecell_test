@@ -11,11 +11,6 @@ class SocketService {
     this.#setupSocketHandlers();
   }
 
-  // Getter pour le nombre d'utilisateurs connectés
-  get connectedUsersCount() {
-    return this.#connectedUsers.size;
-  }
-
   // Méthodes privées
   // Configuration initiale des handlers Socket.IO
   #setupSocketHandlers() {

@@ -26,7 +26,8 @@ class TaskController {
       .populate("createdBy", "username email");
   }
 
-  static async #findByUser(userId) {
+  static async #findByUser(userId, userRole) {
+    // Tout le monde voit toutes les tâches
     return Task.find({})
       .populate("assignedTo", "username email")
       .populate("createdBy", "username email")
@@ -189,7 +190,12 @@ class TaskController {
 
       console.log("🔍 DEBUG updateTaskViaSocket:");
       console.log("📦 taskData reçu:", taskData);
-      console.log("👤 Utilisateur:", socket.user.username, "Role:", socket.user.role);
+      console.log(
+        "👤 Utilisateur:",
+        socket.user.username,
+        "Role:",
+        socket.user.role
+      );
 
       const task = await Task.findById(taskId);
       if (!task) {
@@ -202,14 +208,15 @@ class TaskController {
         id: task._id,
         createdBy: task.createdBy,
         assignedTo: task.assignedTo,
-        title: task.title
+        title: task.title,
       });
 
       // Vérifier les permissions
       const isAdmin = socket.user.role === "admin";
       const isCreator =
         task.createdBy.toString() === socket.user._id.toString();
-      const isAssigned = task.assignedTo.toString() === socket.user._id.toString();
+      const isAssigned =
+        task.assignedTo.toString() === socket.user._id.toString();
 
       console.log("🔐 Permissions:", {
         isAdmin,
@@ -218,7 +225,7 @@ class TaskController {
         userRole: socket.user.role,
         userId: socket.user._id,
         taskCreatedBy: task.createdBy,
-        taskAssignedTo: task.assignedTo
+        taskAssignedTo: task.assignedTo,
       });
 
       if (!isAdmin && !isCreator && !isAssigned) {
@@ -429,7 +436,10 @@ class TaskController {
 
   static async getTasks(req, res) {
     try {
-      const tasks = await TaskController.#findByUser(req.user._id);
+      const tasks = await TaskController.#findByUser(
+        req.user._id,
+        req.user.role
+      );
 
       // Si l'utilisateur est admin, inclure la liste des utilisateurs
       let users = null;

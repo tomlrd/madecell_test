@@ -119,7 +119,7 @@ class SocketService {
     this.isConnected = false;
   }
 
-  // Méthodes CRUD simplifiées
+  // Méthodes CRUD
   createTask(taskData) {
     if (this.socket && this.isConnected) {
       this.socket.emit("create_task", taskData);
@@ -127,19 +127,11 @@ class SocketService {
   }
 
   updateTask(taskId, taskData) {
-    console.log("🔍 DEBUG updateTask côté client:");
-    console.log("📦 taskId:", taskId);
-    console.log("📦 taskData:", taskData);
-    console.log("🔌 Socket connecté:", this.isConnected);
-    console.log("🔌 Socket instance:", !!this.socket);
-
     if (this.socket && this.isConnected) {
       const payload = { taskId, ...taskData };
-      console.log("📤 Émission update_task avec payload:", payload);
       this.socket.emit("update_task", payload);
-      console.log("✅ Émission update_task envoyée");
     } else {
-      console.log("❌ Socket non connecté, impossible d'émettre");
+      console.log("Socket non connecté, impossible d'émettre");
     }
   }
 
