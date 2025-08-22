@@ -288,44 +288,17 @@ title: { type: String, required: true, maxlength: 200 }
 - **Filtres et tri** : Par statut, priorité, date, assigné
 - **Recherche** : Recherche textuelle dans les tâches
 - **Pagination** : Gestion de grandes listes
-- **Export** : PDF, Excel des tâches
 
 ### Performance
 
 - **Cache Redis** : Mise en cache des données fréquentes
 - **Lazy loading** : Chargement à la demande
-- **Optimistic updates** : Mise à jour optimiste de l'UI
 
 ## 📝 Note de Développement
 
 ### Ce qui aurait été ajouté avec plus de temps
 
 #### **Tri et Filtres des Tâches** 🎯
-
-```javascript
-// Filtres côté client
-const filteredTasks = tasks.filter((task) => {
-  return (
-    (statusFilter === "all" || task.status === statusFilter) &&
-    (priorityFilter === "all" || task.priority === priorityFilter) &&
-    (assignedFilter === "all" || task.assignedTo._id === assignedFilter)
-  );
-});
-
-// Tri dynamique
-const sortedTasks = filteredTasks.sort((a, b) => {
-  switch (sortBy) {
-    case "createdAt":
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    case "dueDate":
-      return new Date(a.dueDate) - new Date(b.dueDate);
-    case "priority":
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    default:
-      return 0;
-  }
-});
-```
 
 #### **Interface de Filtrage**
 

@@ -21,6 +21,7 @@ class TaskController {
   }
 
   static async #populateTaskReferences(taskId) {
+    // remplacer automatiquement les références par les documents complets
     return await Task.findById(taskId)
       .populate("assignedTo", "username email")
       .populate("createdBy", "username email");
@@ -28,10 +29,11 @@ class TaskController {
 
   static async #findByUser(userId, userRole) {
     // Tout le monde voit toutes les tâches
+    // remplacer automatiquement les références par les documents complets
     return Task.find({})
       .populate("assignedTo", "username email")
       .populate("createdBy", "username email")
-      .sort({ updatedAt: -1 });
+      .sort({ createdBy: -1 }); // trie par date décroissante
   }
 
   // Méthodes publiques
