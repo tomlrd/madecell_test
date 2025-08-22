@@ -174,10 +174,7 @@ const Dashboard = () => {
         socket.on("notification", handleNotification);
         socket.on("task_notification", handleTaskNotification);
 
-        console.log("✅ Listeners Socket.IO configurés");
-
         return () => {
-          console.log("🧹 Nettoyage des listeners Socket.IO");
           socket.off("task_updated", handleTaskUpdate);
           socket.off("new_task", handleNewTask);
           socket.off("task_deleted", handleTaskDeleted);
@@ -187,7 +184,6 @@ const Dashboard = () => {
           socket.off("task_notification", handleTaskNotification);
         };
       } else {
-        console.log("❌ Socket.IO non connecté, pas de listeners");
         return () => {};
       }
     };
@@ -209,44 +205,6 @@ const Dashboard = () => {
 
     return cleanup;
   }, [user]); // Quand l'utilisateur change
-
-  // Écouter les événements de connexion Socket.IO pour reconfigurer les listeners
-  useEffect(() => {
-    const handleSocketConnected = () => {
-      console.log("🔌 Socket.IO connecté, reconfiguration des listeners...");
-      // Forcer la reconfiguration des listeners quand Socket.IO se reconnecte
-      if (user) {
-        const socket = socketService.socketInstance;
-
-        // Nettoyer les listeners existants
-        socket.off("task_updated", handleTaskUpdate);
-        socket.off("new_task", handleNewTask);
-        socket.off("task_deleted", handleTaskDeleted);
-        socket.off("task_created", handleTaskCreated);
-        socket.off("task_error", handleTaskError);
-        socket.off("notification", handleNotification);
-        socket.off("task_notification", handleTaskNotification);
-
-        // Ajouter les nouveaux listeners
-        socket.on("task_updated", handleTaskUpdate);
-        socket.on("new_task", handleNewTask);
-        socket.on("task_deleted", handleTaskDeleted);
-        socket.on("task_created", handleTaskCreated);
-        socket.on("task_error", handleTaskError);
-        socket.on("notification", handleNotification);
-        socket.on("task_notification", handleTaskNotification);
-
-        console.log("✅ Listeners Socket.IO reconfigurés après reconnexion");
-      }
-    };
-
-    // Écouter l'événement de connexion Socket.IO
-    window.addEventListener("socketConnected", handleSocketConnected);
-
-    return () => {
-      window.removeEventListener("socketConnected", handleSocketConnected);
-    };
-  }, [user]); // Dépendance à user pour s'assurer que les handlers sont à jour
 
   // Afficher un loader pendant la vérification d'authentification
   if (loading) {
