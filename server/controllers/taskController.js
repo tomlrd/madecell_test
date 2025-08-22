@@ -33,7 +33,7 @@ class TaskController {
     return Task.find({})
       .populate("assignedTo", "username email")
       .populate("createdBy", "username email")
-      .sort({ createdBy: -1 }); // trie par date décroissante
+      .sort({ createdBy: -1 });
   }
 
   // Méthodes publiques

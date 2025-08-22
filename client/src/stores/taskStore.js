@@ -43,32 +43,19 @@ const useTaskStore = create((set) => ({
 
   // Actions internes pour les mises à jour Socket.IO
   updateTaskInStore: (taskId, updates) => {
-    console.log("🔄 updateTaskInStore appelé:");
-    console.log("📦 taskId:", taskId);
-    console.log("📦 updates:", updates);
-
     set((state) => {
-      console.log("📋 État actuel des tâches:", state.tasks.length, "tâches");
       const updatedTasks = state.tasks.map((task) => {
         if (task._id === taskId) {
           // Si updates est une tâche complète (avec _id), on la remplace entièrement
           if (updates && updates._id) {
-            console.log(
-              "🔄 Remplacement complet de la tâche:",
-              task.title,
-              "->",
-              updates.title
-            );
             return updates;
           }
           // Sinon, on applique les mises à jour partielles
-          console.log("🔄 Mise à jour partielle de la tâche:", task.title);
           return { ...task, ...updates };
         }
         return task;
       });
 
-      console.log("✅ Nouvelles tâches:", updatedTasks.length, "tâches");
       return { tasks: updatedTasks };
     });
   },

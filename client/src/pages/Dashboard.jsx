@@ -121,13 +121,9 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      // La déconnexion Socket.IO est maintenant gérée dans le authStore
       await logout();
-
-      // Rediriger vers la page de connexion
       navigate("/login");
     } catch {
-      // En cas d'erreur, forcer la déconnexion locale
       navigate("/login");
     }
   };
@@ -136,14 +132,10 @@ const Dashboard = () => {
   useEffect(() => {
     checkAuth();
 
-    // Configurer les listeners avec un délai pour s'assurer que Socket.IO est connecté
+    // Configurer les listeners
     const setupSocketListeners = () => {
-      console.log("🔌 Configuration des listeners Socket.IO...");
-      console.log("📡 Socket connecté:", socketService.isSocketConnected());
-
       if (socketService.isSocketConnected()) {
         const socket = socketService.socketInstance;
-        console.log("🎧 Ajout des listeners sur socket:", socket.id);
 
         socket.on("task_updated", handleTaskUpdate);
         socket.on("new_task", handleNewTask);
@@ -153,10 +145,7 @@ const Dashboard = () => {
         socket.on("notification", handleNotification);
         socket.on("task_notification", handleTaskNotification);
 
-        console.log("✅ Listeners Socket.IO configurés");
-
         return () => {
-          console.log("🧹 Nettoyage des listeners Socket.IO");
           socket.off("task_updated", handleTaskUpdate);
           socket.off("new_task", handleNewTask);
           socket.off("task_deleted", handleTaskDeleted);
@@ -166,7 +155,7 @@ const Dashboard = () => {
           socket.off("task_notification", handleTaskNotification);
         };
       } else {
-        console.log("❌ Socket.IO non connecté, pas de listeners");
+        console.log("Socket.IO non connecté, pas de listeners");
         return () => {};
       }
     };
@@ -178,12 +167,12 @@ const Dashboard = () => {
     if (!socketService.isSocketConnected()) {
       const timer = setTimeout(() => {
         console.log("⏰ Retry configuration des listeners...");
-        cleanup = setupSocketListeners();
+        cleanup = setupSocketListeners(); // Nouvelle fonction de cleanup
       }, 1000);
 
       return () => {
         clearTimeout(timer);
-        if (cleanup) cleanup();
+        if (cleanup) cleanup(); // Retourne la fonction de cleanup
       };
     }
 

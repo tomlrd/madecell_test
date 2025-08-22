@@ -40,29 +40,6 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
-// Middleware de gestion d'erreurs
-app.use((err, req, res, next) => {
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
-      success: false,
-      message: "Erreur de validation",
-      errors: Object.values(err.errors).map((e) => e.message),
-    });
-  }
-
-  if (err.name === "CastError") {
-    return res.status(400).json({
-      success: false,
-      message: "ID invalide",
-    });
-  }
-
-  res.status(500).json({
-    success: false,
-    message: "Erreur interne du serveur",
-  });
-});
-
 // Route 404
 app.use("*", (req, res) => {
   res.status(404).json({

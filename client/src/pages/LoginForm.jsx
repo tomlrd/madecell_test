@@ -45,6 +45,7 @@ const LoginForm = () => {
       navigate("/dashboard");
     } catch (error) {
       // L'erreur est déjà gérée dans le store
+      console.log(error);
     }
   };
 

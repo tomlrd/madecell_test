@@ -10,7 +10,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Juste ajouter le token dans les headers
+// Ajouter le token dans les headers
 api.interceptors.request.use((config) => {
   const accessToken = localStorage.getItem("accessToken");
   if (accessToken && accessToken !== "undefined" && accessToken !== "null") {
@@ -19,24 +19,38 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Intercepteur simple pour gérer les 401
+// Intercepteur de réponse pour gérer automatiquement les erreurs 401 (token expiré)
 api.interceptors.response.use(
+  // Si la réponse est réussie, on la retourne directement
   (response) => response,
+
+  // Si une erreur se produit, on la traite
   async (error) => {
+    // Vérifier si c'est une erreur 401 (non autorisé) ET qu'on n'a pas déjà retenté
     if (error.response?.status === 401 && !error.config._retry) {
+      // Marquer cette requête comme déjà retentée pour éviter les boucles infinies
       error.config._retry = true;
 
       try {
+        // Tenter de rafraîchir le token d'accès
         await socketService.refreshToken();
 
-        // Retry avec le nouveau token
+        // Récupérer le nouveau token depuis le localStorage
         const newToken = localStorage.getItem("accessToken");
+
+        // Mettre à jour l'en-tête Authorization avec le nouveau token
         error.config.headers.Authorization = `Bearer ${newToken}`;
+
+        // Refaire la requête originale avec le nouveau token
         return api(error.config);
       } catch {
+        // Si le refresh échoue, on rejette l'erreur originale
+        // Cela déclenchera une redirection vers la page de login
         return Promise.reject(error);
       }
     }
+
+    // Pour toutes les autres erreurs (non-401), on les rejette directement
     return Promise.reject(error);
   }
 );
