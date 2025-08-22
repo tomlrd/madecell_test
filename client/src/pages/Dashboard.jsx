@@ -62,7 +62,6 @@ const Dashboard = () => {
   const handleTaskCreated = (data) => {
     console.log("✅ Événement task_created reçu:", data);
     addTaskToStore(data.data.task);
-    // Cette notification est gérée par handleNewTask
   };
 
   const handleTaskError = (data) => {
@@ -166,7 +165,6 @@ const Dashboard = () => {
     // Si Socket.IO n'est pas connecté, réessayer après un délai
     if (!socketService.isSocketConnected()) {
       const timer = setTimeout(() => {
-        console.log("⏰ Retry configuration des listeners...");
         cleanup = setupSocketListeners(); // Nouvelle fonction de cleanup
       }, 1000);
 
