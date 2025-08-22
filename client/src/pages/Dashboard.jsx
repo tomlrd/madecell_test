@@ -33,7 +33,11 @@ const Dashboard = () => {
       await loadTasks();
 
       // La connexion Socket.IO est maintenant gérée dans getCurrentUser
-    } catch {
+    } catch (error) {
+      console.error(
+        "Erreur lors de la vérification d'authentification:",
+        error
+      );
       // En cas d'erreur, rediriger vers login
       navigate("/login");
     }
@@ -127,9 +131,23 @@ const Dashboard = () => {
     }
   };
 
-  // Intégration Socket.IO
+  // Vérification d'authentification au montage
   useEffect(() => {
     checkAuth();
+
+    // Timeout de sécurité pour éviter que le loader reste bloqué
+    const timeout = setTimeout(() => {
+      if (loading) {
+        navigate("/login");
+      }
+    }, 10000); // 10 secondes
+
+    return () => clearTimeout(timeout);
+  }, []); // Seulement au montage
+
+  // Configuration des listeners Socket.IO quand l'utilisateur est disponible
+  useEffect(() => {
+    if (!user) return; // Pas d'utilisateur, pas de listeners
 
     // Configurer les listeners
     const setupSocketListeners = () => {
@@ -175,15 +193,58 @@ const Dashboard = () => {
     }
 
     return cleanup;
+  }, [user]); // Quand l'utilisateur change
+
+  // Écouter les événements de connexion Socket.IO
+  useEffect(() => {
+    const handleSocketConnected = () => {
+      console.log("🔌 Socket.IO connecté, configuration des listeners...");
+      // Forcer la reconfiguration des listeners
+      const setupSocketListeners = () => {
+        if (socketService.isSocketConnected()) {
+          const socket = socketService.socketInstance;
+
+          socket.on("task_updated", handleTaskUpdate);
+          socket.on("new_task", handleNewTask);
+          socket.on("task_deleted", handleTaskDeleted);
+          socket.on("task_created", handleTaskCreated);
+          socket.on("task_error", handleTaskError);
+          socket.on("notification", handleNotification);
+          socket.on("task_notification", handleTaskNotification);
+
+          return () => {
+            socket.off("task_updated", handleTaskUpdate);
+            socket.off("new_task", handleNewTask);
+            socket.off("task_deleted", handleTaskDeleted);
+            socket.off("task_created", handleTaskCreated);
+            socket.off("task_error", handleTaskError);
+            socket.off("notification", handleNotification);
+            socket.off("task_notification", handleTaskNotification);
+          };
+        }
+        return () => {};
+      };
+
+      setupSocketListeners();
+    };
+
+    // Écouter l'événement de connexion Socket.IO
+    window.addEventListener("socketConnected", handleSocketConnected);
+
+    return () => {
+      window.removeEventListener("socketConnected", handleSocketConnected);
+    };
   }, []);
 
   // Afficher un loader pendant la vérification d'authentification
   if (loading) {
+    console.log("🔄 Loading state:", { loading, user: !!user });
     return <LoadingSpinner />;
   }
 
   // Si pas d'utilisateur après vérification, ne rien afficher (redirection en cours)
   if (!user) {
+    console.log("❌ Pas d'utilisateur, redirection en cours");
     return null;
   }
 

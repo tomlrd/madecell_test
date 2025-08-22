@@ -64,10 +64,14 @@ class SocketService {
     // Gestion des événements de connexion
     this.socket.on("connect", () => {
       this.isConnected = true;
+      // Émettre un événement personnalisé pour notifier les composants
+      window.dispatchEvent(new CustomEvent("socketConnected"));
     });
 
     this.socket.on("disconnect", () => {
       this.isConnected = false;
+      // Émettre un événement personnalisé pour notifier les composants
+      window.dispatchEvent(new CustomEvent("socketDisconnected"));
     });
 
     this.socket.on("connect_error", async (error) => {
