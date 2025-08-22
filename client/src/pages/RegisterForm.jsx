@@ -26,9 +26,10 @@ const RegisterForm = () => {
     setIsLoading(true);
     setError("");
 
+    const { username, email, password, confirmPassword } = formData;
+
     try {
-      const { username, email, password } = formData;
-      await register({ username, email, password });
+      await register({ username, email, password, confirmPassword });
 
       // L'inscription est réussie, rediriger directement
       navigate("/dashboard");
@@ -116,7 +117,15 @@ const RegisterForm = () => {
                 name="confirmPassword"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm ${
+                  formData.confirmPassword &&
+                  formData.password !== formData.confirmPassword
+                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                    : formData.confirmPassword &&
+                      formData.password === formData.confirmPassword
+                    ? "border-green-500 focus:ring-green-500 focus:border-green-500"
+                    : "border-gray-300"
+                }`}
                 placeholder="Confirmer le mot de passe"
                 value={formData.confirmPassword}
                 onChange={handleChange}

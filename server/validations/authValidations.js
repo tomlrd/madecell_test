@@ -15,6 +15,16 @@ export const registerValidation = [
   body("password")
     .isLength({ min: 6 })
     .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+
+  body("confirmPassword")
+    .notEmpty()
+    .withMessage("La confirmation du mot de passe est requise")
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Les mots de passe ne correspondent pas");
+      }
+      return true;
+    }),
 ];
 
 export const loginValidation = [

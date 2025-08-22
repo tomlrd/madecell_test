@@ -145,15 +145,27 @@ const Dashboard = () => {
     return () => clearTimeout(timeout);
   }, []); // Seulement au montage
 
-  // Configuration des listeners Socket.IO quand l'utilisateur est disponible
+  // Configuration des listeners Socket.IO
   useEffect(() => {
     if (!user) return; // Pas d'utilisateur, pas de listeners
+
+    let cleanup = null;
 
     // Configurer les listeners
     const setupSocketListeners = () => {
       if (socketService.isSocketConnected()) {
         const socket = socketService.socketInstance;
 
+        // Nettoyer les listeners existants avant d'en ajouter de nouveaux
+        socket.off("task_updated", handleTaskUpdate);
+        socket.off("new_task", handleNewTask);
+        socket.off("task_deleted", handleTaskDeleted);
+        socket.off("task_created", handleTaskCreated);
+        socket.off("task_error", handleTaskError);
+        socket.off("notification", handleNotification);
+        socket.off("task_notification", handleTaskNotification);
+
+        // Ajouter les nouveaux listeners
         socket.on("task_updated", handleTaskUpdate);
         socket.on("new_task", handleNewTask);
         socket.on("task_deleted", handleTaskDeleted);
@@ -162,7 +174,10 @@ const Dashboard = () => {
         socket.on("notification", handleNotification);
         socket.on("task_notification", handleTaskNotification);
 
+        console.log("✅ Listeners Socket.IO configurés");
+
         return () => {
+          console.log("🧹 Nettoyage des listeners Socket.IO");
           socket.off("task_updated", handleTaskUpdate);
           socket.off("new_task", handleNewTask);
           socket.off("task_deleted", handleTaskDeleted);
@@ -172,60 +187,57 @@ const Dashboard = () => {
           socket.off("task_notification", handleTaskNotification);
         };
       } else {
-        console.log("Socket.IO non connecté, pas de listeners");
+        console.log("❌ Socket.IO non connecté, pas de listeners");
         return () => {};
       }
     };
 
     // Configurer les listeners immédiatement si Socket.IO est connecté
-    let cleanup = setupSocketListeners();
+    cleanup = setupSocketListeners();
 
     // Si Socket.IO n'est pas connecté, réessayer après un délai
     if (!socketService.isSocketConnected()) {
       const timer = setTimeout(() => {
-        cleanup = setupSocketListeners(); // Nouvelle fonction de cleanup
+        cleanup = setupSocketListeners();
       }, 1000);
 
       return () => {
         clearTimeout(timer);
-        if (cleanup) cleanup(); // Retourne la fonction de cleanup
+        if (cleanup) cleanup();
       };
     }
 
     return cleanup;
   }, [user]); // Quand l'utilisateur change
 
-  // Écouter les événements de connexion Socket.IO
+  // Écouter les événements de connexion Socket.IO pour reconfigurer les listeners
   useEffect(() => {
     const handleSocketConnected = () => {
-      console.log("🔌 Socket.IO connecté, configuration des listeners...");
-      // Forcer la reconfiguration des listeners
-      const setupSocketListeners = () => {
-        if (socketService.isSocketConnected()) {
-          const socket = socketService.socketInstance;
+      console.log("🔌 Socket.IO connecté, reconfiguration des listeners...");
+      // Forcer la reconfiguration des listeners quand Socket.IO se reconnecte
+      if (user) {
+        const socket = socketService.socketInstance;
 
-          socket.on("task_updated", handleTaskUpdate);
-          socket.on("new_task", handleNewTask);
-          socket.on("task_deleted", handleTaskDeleted);
-          socket.on("task_created", handleTaskCreated);
-          socket.on("task_error", handleTaskError);
-          socket.on("notification", handleNotification);
-          socket.on("task_notification", handleTaskNotification);
+        // Nettoyer les listeners existants
+        socket.off("task_updated", handleTaskUpdate);
+        socket.off("new_task", handleNewTask);
+        socket.off("task_deleted", handleTaskDeleted);
+        socket.off("task_created", handleTaskCreated);
+        socket.off("task_error", handleTaskError);
+        socket.off("notification", handleNotification);
+        socket.off("task_notification", handleTaskNotification);
 
-          return () => {
-            socket.off("task_updated", handleTaskUpdate);
-            socket.off("new_task", handleNewTask);
-            socket.off("task_deleted", handleTaskDeleted);
-            socket.off("task_created", handleTaskCreated);
-            socket.off("task_error", handleTaskError);
-            socket.off("notification", handleNotification);
-            socket.off("task_notification", handleTaskNotification);
-          };
-        }
-        return () => {};
-      };
+        // Ajouter les nouveaux listeners
+        socket.on("task_updated", handleTaskUpdate);
+        socket.on("new_task", handleNewTask);
+        socket.on("task_deleted", handleTaskDeleted);
+        socket.on("task_created", handleTaskCreated);
+        socket.on("task_error", handleTaskError);
+        socket.on("notification", handleNotification);
+        socket.on("task_notification", handleTaskNotification);
 
-      setupSocketListeners();
+        console.log("✅ Listeners Socket.IO reconfigurés après reconnexion");
+      }
     };
 
     // Écouter l'événement de connexion Socket.IO
@@ -234,7 +246,7 @@ const Dashboard = () => {
     return () => {
       window.removeEventListener("socketConnected", handleSocketConnected);
     };
-  }, []);
+  }, [user]); // Dépendance à user pour s'assurer que les handlers sont à jour
 
   // Afficher un loader pendant la vérification d'authentification
   if (loading) {
